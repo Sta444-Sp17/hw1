@@ -1,7 +1,7 @@
 ---
 title: "Homework 1"
 author: Your Name Here
-date: Due 1/25/2017
+date: Due 1/25/2017 by midnight
 output: 
   html_document:
     theme: cosmo
@@ -11,3 +11,86 @@ output:
 ### Question 1
 
 <i>Assume that you have observed data $y_1,\, \ldots, \, y_n$. Show that the multivariate normal likelihood for these data, when $\mathbf{\mu} = \underset{n \times 1}{\mathbf{0}}$ and $\mathbf{\Sigma} = \sigma^2 \underset{n \times n}{\mathbf{I}_n}$ is the same as the likelihood a treating these data as arising from $n$ iid normals with mean 0 and variance $\sigma^2$.</i>
+
+<!-- Include your derivation below using latex--> 
+
+$$ $$
+
+******
+
+### Question 2
+
+<i>In class we discussed a simple bayesian linear model and the jags implementation is included on the course website (and below). Using this code as a starting point fit a single chain to each combination of the following parameter values (9 total models):</i>
+
+$$
+\begin{aligned}
+\sigma^2_{\beta} &\in \{10, 100, 1000\}\\
+(a,b) &\in \{(1,1),~(0.01,0.01),~(0.0001, 0.0001)\}
+\end{aligned}
+$$
+<i>Hint - if you replace the fixed values in the model specification with variable names you will not need to rewrite the model text multiple times.</a>
+
+
+```{r}
+library(rjags)
+
+set.seed(01172017)
+n = 100
+beta = c(0.7,1.5,-2.2,0.1)
+eps = rnorm(n)
+
+X0 = rep(1, n)
+X1 = rt(n,df=5)
+X2 = rt(n,df=5)
+X3 = rt(n,df=5)
+
+X = cbind(X0, X1, X2, X3)
+Y = X %*% beta + eps
+d = data.frame(Y,X[,-1]) 
+
+model = "
+model{
+  # Likelihood
+  for(i in 1:n){
+    Y[i]   ~ dnorm(mu[i],tau2)
+    mu[i] <- beta[1] + beta[2]*X1[i] + beta[3]*X2[i] + beta[4]*X3[i]
+  }
+
+  # Prior for beta
+  for(j in 1:4){
+    beta[j] ~ dnorm(0,1/100)
+  }
+
+  # Prior for the inverse variance
+  tau2   ~ dgamma(1, 1)
+  sigma <- 1/sqrt(tau2)
+}
+"
+
+m = jags.model(
+  textConnection(model), 
+  data = list(Y=c(Y), n=n, X1=X1, X2=X2, X3=X3),
+  n.chains = 4
+)
+
+update(m, 1000, progress.bar="none")
+
+samp = coda.samples(
+  m, 
+  variable.names=c("beta","sigma"), 
+  n.iter=5000, progress.bar="none"
+)
+```
+
+******
+
+### Question 3
+
+<i> Create a table summarizing the results from Question 2. This table should include one row with the true parameter values and additional rows for each model fit. There should be one column for each parameter ($\beta_0$, $\beta_1$, $\beta_2$, $\beta_3$, and $\sigma$). Entries in the table should include the posterior mean, median and a 95% credible interval. Ideally your answer should be reproducible and not use any hard coded values. </i> 
+
+
+******
+
+### Question 4
+
+<i> The Bayesian lasso is a linear modeling approach where instead of a normal prior being placed on the $\beta$s we instead use a double exponential (Laplace) prior. If we were to use this prior generally describe what the Gibbs update step for $\beta_1$  would look like if we assume $\mu_\beta$=0  and $\lambda_\beta$ is fixed. You answer should include the formula for the conditional posterior up to a normalizing constant.</i>
