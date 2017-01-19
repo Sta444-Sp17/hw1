@@ -1,0 +1,13 @@
+---
+title: "Homework 1"
+author: Your Name Here
+date: Due 1/25/2017
+output: 
+  html_document:
+    theme: cosmo
+---
+
+
+### Question 1
+
+<i>Assume that you have observed data $y_1,\, \ldots, \, y_n$. Show that the multivariate normal likelihood for these data, when $\mathbf{\mu} = \underset{n \times 1}{\mathbf{0}}$ and $\mathbf{\Sigma} = \sigma^2 \underset{n \times n}{\mathbf{I}_n}$ is the same as the likelihood a treating these data as arising from $n$ iid normals with mean 0 and variance $\sigma^2$.</i>
